@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gasto Mercadona</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1c6b47">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--verde:#1c6b47;--tinta:#14201b;--papel:#f6f7f4;--linea:#e2e7e3;--gris:#5a6b62;--rojo:#b3261e;}
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         background:var(--papel);color:var(--tinta);-webkit-text-size-adjust:100%;
+         padding:max(16px,env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));}
+    .wrap{max-width:920px;margin:0 auto;}
+    header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;}
+    header h1{font-size:1.05rem;font-weight:650;margin:0;}
+    header a{font-size:.85rem;color:var(--gris);text-decoration:none;cursor:pointer;}
+    .hero{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:22px;margin-bottom:14px;}
+    .hero .label{font-size:.82rem;color:var(--gris);margin:0 0 6px;}
+    .hero .big{font-size:clamp(2.4rem,9vw,3.4rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+    .hero .big .eur{font-size:.5em;color:var(--gris);font-weight:600;margin-left:6px;}
+    .delta{display:inline-block;margin-top:10px;font-size:.9rem;font-variant-numeric:tabular-nums;}
+    .delta.up{color:var(--rojo);}.delta.down{color:var(--verde);}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+    .stat{background:#fff;border:1px solid var(--linea);border-radius:12px;padding:12px 14px;}
+    .stat .n{font-size:1.25rem;font-weight:650;font-variant-numeric:tabular-nums;}
+    .stat .t{font-size:.72rem;color:var(--gris);margin-top:2px;}
+    section{margin-bottom:26px;}section>h2{font-size:.95rem;font-weight:600;margin:0 0 12px;}
+    .card{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px;}
+    canvas{width:100%!important;}
+    table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+    th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--linea);font-size:.9rem;}
+    th{color:var(--gris);font-weight:500;font-size:.78rem;}
+    td.num,th.num{text-align:right;}
+    .pct.up{color:var(--rojo);}.pct.down{color:var(--verde);}
+    .prod{cursor:pointer;text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:3px;}
+    .empty{color:var(--gris);font-size:.9rem;}
+    dialog{border:0;border-radius:16px;padding:18px;max-width:520px;width:92vw;}
+    dialog::backdrop{background:rgba(20,32,27,.35);}
+    dialog h3{margin:0 0 12px;font-size:1rem;}
+    dialog button.close{position:absolute;top:12px;right:14px;border:0;background:none;font-size:1.3rem;color:var(--gris);cursor:pointer;}
+    /* login */
+    #login{min-height:70dvh;display:grid;place-items:center;}
+    #login form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;}
+    #login h1{font-size:1.15rem;margin:0 0 2px;}
+    #login p{margin:0 0 6px;color:var(--gris);font-size:.9rem;}
+    input{padding:12px 14px;border:1px solid #cdd6d0;border-radius:10px;font-size:1rem;background:#fff;}
+    input:focus{outline:2px solid var(--verde);border-color:var(--verde);}
+    button.primary{padding:12px;border:0;border-radius:10px;background:var(--verde);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;}
+    .err{color:var(--rojo);font-size:.88rem;margin:0;}
+    #app{display:none;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="login">
+    <form id="login-form">
+      <h1>Gasto Mercadona</h1>
+      <p>Acceso privado</p>
+      <input type="email" id="email" placeholder="Correo" autocomplete="username">
+      <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password">
+      <p class="err" id="login-err" style="display:none"></p>
+      <button type="submit" class="primary">Entrar</button>
+    </form>
+  </div>
+
+  <div id="app">
+    <header>
+      <h1>Gasto Mercadona</h1>
+      <a id="logout">Salir</a>
+    </header>
+
+    <div class="hero">
+      <p class="label" id="hero-mes">Mes en curso</p>
+      <div class="big"><span id="hero-gasto">—</span><span class="eur">€</span></div>
+      <span class="delta" id="hero-delta"></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-total">—</div><div class="t">Gasto total</div></div>
+      <div class="stat"><div class="n" id="s-tickets">—</div><div class="t">Tickets</div></div>
+      <div class="stat"><div class="n" id="s-medio">—</div><div class="t">Ticket medio</div></div>
+    </div>
+
+    <section><h2>Gasto por mes</h2>
+      <div class="card"><canvas id="chart-mensual" height="200"></canvas></div></section>
+
+    <section><h2>En qué gastas más</h2>
+      <div class="card"><canvas id="chart-top" height="260"></canvas></div></section>
+
+    <section><h2>Cómo cambian tus precios</h2>
+      <div class="card">
+        <p class="empty" id="precios-empty" style="display:none">
+          Aún no hay productos comprados dos o más veces. Con más tickets aparecerá aquí
+          la variación de precio de tu cesta.</p>
+        <table id="tabla-precios" style="display:none">
+          <thead><tr><th>Producto</th><th class="num">1.ª vez</th><th class="num">Última</th><th class="num">Var.</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div></section>
+  </div>
+</div>
+
+<dialog id="modal">
+  <button class="close" onclick="document.getElementById('modal').close()">×</button>
+  <h3 id="modal-title"></h3>
+  <canvas id="chart-precio" height="200"></canvas>
+</dialog>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+/* ==========================================================================
+   CONFIGURA ESTAS DOS LÍNEAS con los datos de tu proyecto Supabase
+   (Project Settings > API). La anon key es pública: es seguro ponerla aquí,
+   porque los datos solo se leen tras iniciar sesión (RLS).
+   ========================================================================== */
+const SUPABASE_URL = "https://dgzrkxcnzpulhxlalqlb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnenJreGNuenB1bGh4bGFscWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDMyNzMsImV4cCI6MjEwNDc3OTI3M30.81bLisLmomWPLSlbYvHOjnJ9Ec96GGpKqiP2_I3NLes";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const eur = v => (v==null?'—':Number(v).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}));
+const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const etiquetaMes = m => { const [y,mm]=m.split('-'); return meses[+mm-1]+' '+y; };
+let chMensual, chTop, chPrecio, LINEAS=[];
+
+/* ---- sesión / login ---- */
+async function refrescarSesion(){
+  const { data:{ session } } = await supabase.auth.getSession();
+  document.getElementById('login').style.display = session ? 'none' : 'grid';
+  document.getElementById('app').style.display   = session ? 'block' : 'none';
+  if (session) cargar();
+}
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('login-err'); err.style.display='none';
+  const { error } = await supabase.auth.signInWithPassword({
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value,
+  });
+  if (error){ err.textContent = 'No se pudo entrar. Revisa correo y contraseña.'; err.style.display='block'; }
+});
+document.getElementById('logout').addEventListener('click', async () => {
+  await supabase.auth.signOut(); refrescarSesion();
+});
+
+/* ---- datos + análisis (equivalente a analysis.py, en el navegador) ---- */
+async function cargar(){
+  const [{ data: tickets }, { data: lineas }] = await Promise.all([
+    supabase.from('tickets').select('fecha,total').order('fecha'),
+    supabase.from('lineas').select('fecha,producto_norm,cantidad,precio_unit,importe').order('fecha'),
+  ]);
+  LINEAS = lineas || [];
+
+  // gasto mensual
+  const porMes = {};
+  (tickets||[]).forEach(t => { const m=t.fecha.slice(0,7); (porMes[m]=porMes[m]||{g:0,n:0}); porMes[m].g+=Number(t.total); porMes[m].n++; });
+  const gm = Object.keys(porMes).sort().map(m => ({mes:m, gasto:+porMes[m].g.toFixed(2), n:porMes[m].n}));
+
+  // resumen
+  const total = (tickets||[]).reduce((a,t)=>a+Number(t.total),0);
+  const nT = (tickets||[]).length;
+
+  // héroe
+  if (gm.length){
+    const u = gm[gm.length-1];
+    document.getElementById('hero-mes').textContent = etiquetaMes(u.mes);
+    document.getElementById('hero-gasto').textContent = eur(u.gasto);
+    if (gm.length>1){
+      const prev = gm[gm.length-2].gasto, diff=u.gasto-prev, pct=prev?diff/prev*100:0;
+      const el=document.getElementById('hero-delta');
+      el.textContent=(diff>=0?'+':'')+eur(diff)+' € ('+(pct>=0?'+':'')+pct.toFixed(1)+'%) vs mes anterior';
+      el.className='delta '+(diff>=0?'up':'down');
+    }
+  }
+  document.getElementById('s-total').textContent = eur(total)+' €';
+  document.getElementById('s-tickets').textContent = nT;
+  document.getElementById('s-medio').textContent = eur(nT?total/nT:0)+' €';
+
+  dibujaMensual(gm);
+  dibujaTop(topProductos());
+  dibujaPrecios(subidasPrecio());
+}
+
+function topProductos(){
+  const g={};
+  LINEAS.forEach(l => { const p=l.producto_norm; (g[p]=g[p]||{gasto:0}); g[p].gasto+=Number(l.importe); });
+  return Object.entries(g).map(([p,v])=>({producto:p,gasto:+v.gasto.toFixed(2)}))
+    .sort((a,b)=>b.gasto-a.gasto).slice(0,15);
+}
+function seriePrecio(prod){
+  return LINEAS.filter(l=>l.producto_norm===prod)
+    .map(l=>({fecha:l.fecha.slice(0,10),precio:Number(l.precio_unit)}))
+    .sort((a,b)=>a.fecha.localeCompare(b.fecha));
+}
+function subidasPrecio(){
+  const byP={};
+  LINEAS.forEach(l => { (byP[l.producto_norm]=byP[l.producto_norm]||[]).push(l); });
+  const res=[];
+  Object.keys(byP).forEach(p => {
+    const s=seriePrecio(p);
+    if (s.length>=2 && s[0].precio){
+      res.push({producto:p, ini:s[0].precio, fin:s[s.length-1].precio,
+        pct:+((s[s.length-1].precio-s[0].precio)/s[0].precio*100).toFixed(1)});
+    }
+  });
+  return res.sort((a,b)=>b.pct-a.pct);
+}
+
+function baseOpts(unit){
+  return {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur(c.parsed.y ?? c.parsed.x)+' '+unit}}},
+    scales:{x:{grid:{display:false}},y:{grid:{color:'#eef2ef'},ticks:{callback:v=>eur(v)}}}};
+}
+function dibujaMensual(gm){
+  chMensual?.destroy();
+  chMensual=new Chart(document.getElementById('chart-mensual'),{type:'line',
+    data:{labels:gm.map(x=>etiquetaMes(x.mes)),datasets:[{data:gm.map(x=>x.gasto),
+      borderColor:'#1c6b47',backgroundColor:'rgba(28,107,71,.10)',fill:true,tension:.25,
+      pointRadius:3,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€')});
+}
+function dibujaTop(top){
+  chTop?.destroy();
+  chTop=new Chart(document.getElementById('chart-top'),{type:'bar',
+    data:{labels:top.map(x=>x.producto),datasets:[{data:top.map(x=>x.gasto),
+      backgroundColor:'#1c6b47',borderRadius:5}]},
+    options:{indexAxis:'y',...baseOpts('€'),
+      onClick:(e,els)=>{ if(els.length) abrePrecio(top[els[0].index].producto); }}});
+}
+function dibujaPrecios(rows){
+  const tabla=document.getElementById('tabla-precios'), vacio=document.getElementById('precios-empty');
+  if(!rows.length){ vacio.style.display='block'; tabla.style.display='none'; return; }
+  vacio.style.display='none'; tabla.style.display='table';
+  const tb=tabla.querySelector('tbody'); tb.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr'), up=r.pct>=0;
+    tr.innerHTML=`<td><span class="prod">${r.producto}</span></td>
+      <td class="num">${eur(r.ini)} €</td><td class="num">${eur(r.fin)} €</td>
+      <td class="num pct ${up?'up':'down'}">${up?'+':''}${r.pct}%</td>`;
+    tr.querySelector('.prod').onclick=()=>abrePrecio(r.producto);
+    tb.appendChild(tr);
+  });
+}
+function abrePrecio(prod){
+  const s=seriePrecio(prod);
+  document.getElementById('modal-title').textContent=prod;
+  chPrecio?.destroy();
+  chPrecio=new Chart(document.getElementById('chart-precio'),{type:'line',
+    data:{labels:s.map(x=>x.fecha),datasets:[{data:s.map(x=>x.precio),
+      borderColor:'#1c6b47',backgroundColor:'rgba(28,107,71,.10)',fill:true,tension:.2,
+      pointRadius:4,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€ /ud')});
+  document.getElementById('modal').showModal();
+}
+
+supabase.auth.onAuthStateChange(()=>refrescarSesion());
+refrescarSesion();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
