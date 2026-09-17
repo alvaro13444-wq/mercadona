@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
-    :root{--verde:#1c6b47;--tinta:#14201b;--papel:#f6f7f4;--linea:#e2e7e3;--gris:#5a6b62;--rojo:#b3261e;}
+    :root{--verde:#1c6b47;--verde-suave:#e6f0ea;--tinta:#14201b;--papel:#f6f7f4;--linea:#e2e7e3;--gris:#5a6b62;--rojo:#b3261e;}
     *{box-sizing:border-box;}
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
          background:var(--papel);color:var(--tinta);-webkit-text-size-adjust:100%;
@@ -21,38 +21,55 @@
     header a{font-size:.85rem;color:var(--gris);text-decoration:none;cursor:pointer;}
     .hero{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:22px;margin-bottom:14px;}
     .hero .label{font-size:.82rem;color:var(--gris);margin:0 0 6px;}
-    .hero .big{font-size:clamp(2.4rem,9vw,3.4rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+    .hero .big{font-size:clamp(2.2rem,8vw,3.2rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
     .hero .big .eur{font-size:.5em;color:var(--gris);font-weight:600;margin-left:6px;}
     .delta{display:inline-block;margin-top:10px;font-size:.9rem;font-variant-numeric:tabular-nums;}
     .delta.up{color:var(--rojo);}.delta.down{color:var(--verde);}
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
     .stat{background:#fff;border:1px solid var(--linea);border-radius:12px;padding:12px 14px;}
-    .stat .n{font-size:1.25rem;font-weight:650;font-variant-numeric:tabular-nums;}
+    .stat .n{font-size:1.2rem;font-weight:650;font-variant-numeric:tabular-nums;}
     .stat .t{font-size:.72rem;color:var(--gris);margin-top:2px;}
     section{margin-bottom:26px;}section>h2{font-size:.95rem;font-weight:600;margin:0 0 12px;}
     .card{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px;}
+    .card h3{font-size:.8rem;color:var(--gris);font-weight:600;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.03em;}
+    .card h3:first-child{margin-top:0;}
     canvas{width:100%!important;}
     table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
     th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--linea);font-size:.9rem;}
     th{color:var(--gris);font-weight:500;font-size:.78rem;}
     td.num,th.num{text-align:right;}
     .pct.up{color:var(--rojo);}.pct.down{color:var(--verde);}
-    .prod{cursor:pointer;text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:3px;}
+    .prod,.tk{cursor:pointer;color:var(--verde);text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:3px;}
     .empty{color:var(--gris);font-size:.9rem;}
-    dialog{border:0;border-radius:16px;padding:18px;max-width:520px;width:92vw;}
-    dialog::backdrop{background:rgba(20,32,27,.35);}
-    dialog h3{margin:0 0 12px;font-size:1rem;}
-    dialog button.close{position:absolute;top:12px;right:14px;border:0;background:none;font-size:1.3rem;color:var(--gris);cursor:pointer;}
+    .scroll{max-height:340px;overflow-y:auto;}
+    /* controles mes */
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}
+    select,input[type=text]{padding:10px 12px;border:1px solid #cdd6d0;border-radius:10px;font-size:1rem;background:#fff;color:var(--tinta);}
+    select{font-weight:600;}
+    input[type=text]{flex:1;min-width:150px;}
+    input:focus,select:focus{outline:2px solid var(--verde);border-color:var(--verde);}
+    .btnx{border:1px solid #cdd6d0;background:#fff;border-radius:10px;padding:0 12px;height:42px;cursor:pointer;color:var(--gris);font-size:1rem;}
+    .mes-resumen{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 4px;font-variant-numeric:tabular-nums;}
+    .mes-resumen .b{font-size:1.15rem;font-weight:650;}
+    .mes-resumen .s{font-size:.72rem;color:var(--gris);}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;}
+    .chip{border:1px solid var(--linea);background:var(--papel);border-radius:999px;padding:7px 12px;font-size:.85rem;cursor:pointer;display:flex;gap:8px;align-items:center;}
+    .chip.activa{border-color:var(--verde);background:var(--verde-suave);}
+    .chip .g{color:var(--gris);font-variant-numeric:tabular-nums;}
     /* login */
     #login{min-height:70dvh;display:grid;place-items:center;}
     #login form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;}
     #login h1{font-size:1.15rem;margin:0 0 2px;}
     #login p{margin:0 0 6px;color:var(--gris);font-size:.9rem;}
-    input{padding:12px 14px;border:1px solid #cdd6d0;border-radius:10px;font-size:1rem;background:#fff;}
-    input:focus{outline:2px solid var(--verde);border-color:var(--verde);}
+    input[type=email],input[type=password]{padding:12px 14px;border:1px solid #cdd6d0;border-radius:10px;font-size:1rem;background:#fff;}
     button.primary{padding:12px;border:0;border-radius:10px;background:var(--verde);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;}
     .err{color:var(--rojo);font-size:.88rem;margin:0;}
     #app{display:none;}
+    dialog{border:0;border-radius:16px;padding:18px;max-width:560px;width:92vw;}
+    dialog::backdrop{background:rgba(20,32,27,.35);}
+    dialog h3{margin:0 0 4px;font-size:1rem;}
+    dialog .close{position:absolute;top:12px;right:14px;border:0;background:none;font-size:1.3rem;color:var(--gris);cursor:pointer;}
+    #mt-meta{color:var(--gris);font-size:.85rem;margin-bottom:12px;}
   </style>
 </head>
 <body>
@@ -76,7 +93,7 @@
     </header>
 
     <div class="hero">
-      <p class="label" id="hero-mes">Mes en curso</p>
+      <p class="label" id="hero-mes">Cargando…</p>
       <div class="big"><span id="hero-gasto">—</span><span class="eur">€</span></div>
       <span class="delta" id="hero-delta"></span>
     </div>
@@ -87,49 +104,81 @@
       <div class="stat"><div class="n" id="s-medio">—</div><div class="t">Ticket medio</div></div>
     </div>
 
-    <section><h2>Gasto por mes</h2>
+    <!-- ====== EXPLORAR POR MES ====== -->
+    <section id="sec-mes">
+      <h2>Explorar por mes</h2>
+      <div class="card">
+        <div class="controls">
+          <select id="sel-mes"></select>
+          <input type="text" id="buscar-tienda" placeholder="Buscar tienda…">
+          <button class="btnx" id="limpiar-tienda" hidden>✕</button>
+        </div>
+        <div class="mes-resumen" id="mes-resumen"></div>
+
+        <h3>Tiendas de este mes</h3>
+        <div class="chips" id="mes-tiendas"></div>
+
+        <h3>Tickets</h3>
+        <div id="mes-tickets"></div>
+
+        <h3>Productos comprados este mes</h3>
+        <div class="scroll" id="mes-productos"></div>
+      </div>
+    </section>
+
+    <section><h2>Gasto por mes (histórico)</h2>
       <div class="card"><canvas id="chart-mensual" height="200"></canvas></div></section>
 
-    <section><h2>En qué gastas más</h2>
-      <div class="card"><canvas id="chart-top" height="260"></canvas></div></section>
+    <section><h2>En qué gastas más (histórico)</h2>
+      <div class="card"><canvas id="chart-top" height="300"></canvas></div></section>
 
     <section><h2>Cómo cambian tus precios</h2>
       <div class="card">
-        <p class="empty" id="precios-empty" style="display:none">
-          Aún no hay productos comprados dos o más veces. Con más tickets aparecerá aquí
-          la variación de precio de tu cesta.</p>
-        <table id="tabla-precios" style="display:none">
-          <thead><tr><th>Producto</th><th class="num">1.ª vez</th><th class="num">Última</th><th class="num">Var.</th></tr></thead>
-          <tbody></tbody>
-        </table>
+        <p class="empty" id="precios-empty" style="display:none">Aún no hay suficientes repeticiones.</p>
+        <div class="scroll">
+          <table id="tabla-precios" style="display:none">
+            <thead><tr><th>Producto</th><th class="num">1.ª vez</th><th class="num">Última</th><th class="num">Var.</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div></section>
   </div>
 </div>
 
-<dialog id="modal">
-  <button class="close" onclick="document.getElementById('modal').close()">×</button>
-  <h3 id="modal-title"></h3>
+<!-- modal: evolución de precio de un producto -->
+<dialog id="modal-precio">
+  <button class="close" data-close="modal-precio">×</button>
+  <h3 id="mp-title"></h3>
   <canvas id="chart-precio" height="200"></canvas>
+</dialog>
+
+<!-- modal: detalle de un ticket -->
+<dialog id="modal-ticket">
+  <button class="close" data-close="modal-ticket">×</button>
+  <h3 id="mt-title"></h3>
+  <div id="mt-meta"></div>
+  <div id="mt-lineas"></div>
 </dialog>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-/* ==========================================================================
-   CONFIGURA ESTAS DOS LÍNEAS con los datos de tu proyecto Supabase
-   (Project Settings > API). La anon key es pública: es seguro ponerla aquí,
-   porque los datos solo se leen tras iniciar sesión (RLS).
-   ========================================================================== */
 const SUPABASE_URL = "https://dgzrkxcnzpulhxlalqlb.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnenJreGNuenB1bGh4bGFscWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDMyNzMsImV4cCI6MjEwNDc3OTI3M30.81bLisLmomWPLSlbYvHOjnJ9Ec96GGpKqiP2_I3NLes";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const eur = v => (v==null?'—':Number(v).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}));
 const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const mesLargo=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const etiquetaMes = m => { const [y,mm]=m.split('-'); return meses[+mm-1]+' '+y; };
-let chMensual, chTop, chPrecio, LINEAS=[];
+const etiquetaMesLargo = m => { const [y,mm]=m.split('-'); return mesLargo[+mm-1]+' '+y; };
+const fechaCorta = iso => { const d=iso.slice(0,10).split('-'); return `${d[2]}/${d[1]}/${d[0]}`; };
+const tiendaDe = t => { const p=[t.direccion,t.ciudad].filter(x=>x&&String(x).trim()); return p.length?p.join(', '):'Tienda sin identificar'; };
 
-/* ---- sesión / login ---- */
+let TICKETS=[], LINEAS=[], LINEAS_POR_TICKET={}, chMensual, chTop, chPrecio;
+const estadoMes = { mes:null, tienda:'' };
+
+/* ---------- sesión ---------- */
 async function refrescarSesion(){
   const { data:{ session } } = await supabase.auth.getSession();
   document.getElementById('login').style.display = session ? 'none' : 'grid';
@@ -138,60 +187,74 @@ async function refrescarSesion(){
 }
 document.getElementById('login-form').addEventListener('submit', async e => {
   e.preventDefault();
-  const err = document.getElementById('login-err'); err.style.display='none';
+  const err=document.getElementById('login-err'); err.style.display='none';
   const { error } = await supabase.auth.signInWithPassword({
     email: document.getElementById('email').value,
     password: document.getElementById('password').value,
   });
-  if (error){ err.textContent = 'No se pudo entrar. Revisa correo y contraseña.'; err.style.display='block'; }
+  if (error){ err.textContent='No se pudo entrar. Revisa correo y contraseña.'; err.style.display='block'; }
 });
-document.getElementById('logout').addEventListener('click', async () => {
-  await supabase.auth.signOut(); refrescarSesion();
-});
+document.getElementById('logout').addEventListener('click', async ()=>{ await supabase.auth.signOut(); refrescarSesion(); });
+document.querySelectorAll('dialog .close').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).close());
 
-/* ---- datos + análisis (equivalente a analysis.py, en el navegador) ---- */
+/* ---------- lectura paginada (Supabase devuelve máx 1000 por consulta) ---------- */
+async function traerTodo(tabla, columnas){
+  const paso=1000; let desde=0, todo=[];
+  while(true){
+    const { data, error } = await supabase.from(tabla).select(columnas).order('fecha').range(desde, desde+paso-1);
+    if (error){ console.error(error); break; }
+    todo = todo.concat(data);
+    if (data.length < paso) break;
+    desde += paso;
+  }
+  return todo;
+}
+
+/* ---------- carga inicial ---------- */
 async function cargar(){
-  const [{ data: tickets }, { data: lineas }] = await Promise.all([
-    supabase.from('tickets').select('fecha,total').order('fecha'),
-    supabase.from('lineas').select('fecha,producto_norm,cantidad,precio_unit,importe').order('fecha'),
-  ]);
-  LINEAS = lineas || [];
+  TICKETS = await traerTodo('tickets', 'factura_id,fecha,total,direccion,ciudad');
+  LINEAS  = await traerTodo('lineas', 'factura_id,fecha,producto_norm,descripcion,cantidad,precio_unit,importe,por_peso');
 
-  // gasto mensual
-  const porMes = {};
-  (tickets||[]).forEach(t => { const m=t.fecha.slice(0,7); (porMes[m]=porMes[m]||{g:0,n:0}); porMes[m].g+=Number(t.total); porMes[m].n++; });
-  const gm = Object.keys(porMes).sort().map(m => ({mes:m, gasto:+porMes[m].g.toFixed(2), n:porMes[m].n}));
+  LINEAS_POR_TICKET={};
+  LINEAS.forEach(l=>{ (LINEAS_POR_TICKET[l.factura_id]=LINEAS_POR_TICKET[l.factura_id]||[]).push(l); });
 
-  // resumen
-  const total = (tickets||[]).reduce((a,t)=>a+Number(t.total),0);
-  const nT = (tickets||[]).length;
+  // resumen global
+  const total = TICKETS.reduce((a,t)=>a+Number(t.total||0),0);
+  const nT = TICKETS.length;
+  document.getElementById('s-total').textContent = eur(total)+' €';
+  document.getElementById('s-tickets').textContent = nT;
+  document.getElementById('s-medio').textContent = eur(nT?total/nT:0)+' €';
 
-  // héroe
+  const gm = gastoMensual();
   if (gm.length){
-    const u = gm[gm.length-1];
-    document.getElementById('hero-mes').textContent = etiquetaMes(u.mes);
+    const u=gm[gm.length-1];
+    document.getElementById('hero-mes').textContent = etiquetaMesLargo(u.mes);
     document.getElementById('hero-gasto').textContent = eur(u.gasto);
     if (gm.length>1){
-      const prev = gm[gm.length-2].gasto, diff=u.gasto-prev, pct=prev?diff/prev*100:0;
+      const prev=gm[gm.length-2].gasto, diff=u.gasto-prev, pct=prev?diff/prev*100:0;
       const el=document.getElementById('hero-delta');
       el.textContent=(diff>=0?'+':'')+eur(diff)+' € ('+(pct>=0?'+':'')+pct.toFixed(1)+'%) vs mes anterior';
       el.className='delta '+(diff>=0?'up':'down');
     }
   }
-  document.getElementById('s-total').textContent = eur(total)+' €';
-  document.getElementById('s-tickets').textContent = nT;
-  document.getElementById('s-medio').textContent = eur(nT?total/nT:0)+' €';
 
   dibujaMensual(gm);
-  dibujaTop(topProductos());
+  dibujaTop(topProductos(LINEAS));
   dibujaPrecios(subidasPrecio());
+  prepararSelectorMes(gm);
 }
 
-function topProductos(){
+/* ---------- cálculos globales ---------- */
+function gastoMensual(){
+  const p={};
+  TICKETS.forEach(t=>{ const m=t.fecha.slice(0,7); (p[m]=p[m]||0); p[m]+=Number(t.total||0); });
+  return Object.keys(p).sort().map(m=>({mes:m, gasto:+p[m].toFixed(2)}));
+}
+function topProductos(lineas, limite=15){
   const g={};
-  LINEAS.forEach(l => { const p=l.producto_norm; (g[p]=g[p]||{gasto:0}); g[p].gasto+=Number(l.importe); });
-  return Object.entries(g).map(([p,v])=>({producto:p,gasto:+v.gasto.toFixed(2)}))
-    .sort((a,b)=>b.gasto-a.gasto).slice(0,15);
+  lineas.forEach(l=>{ (g[l.producto_norm]=g[l.producto_norm]||{gasto:0,uds:0}); g[l.producto_norm].gasto+=Number(l.importe||0); g[l.producto_norm].uds+=Number(l.cantidad||0); });
+  return Object.entries(g).map(([p,v])=>({producto:p,gasto:+v.gasto.toFixed(2),uds:+v.uds.toFixed(2)}))
+    .sort((a,b)=>b.gasto-a.gasto).slice(0,limite);
 }
 function seriePrecio(prod){
   return LINEAS.filter(l=>l.producto_norm===prod)
@@ -200,18 +263,18 @@ function seriePrecio(prod){
 }
 function subidasPrecio(){
   const byP={};
-  LINEAS.forEach(l => { (byP[l.producto_norm]=byP[l.producto_norm]||[]).push(l); });
+  LINEAS.forEach(l=>{ (byP[l.producto_norm]=byP[l.producto_norm]||[]).push(l); });
   const res=[];
-  Object.keys(byP).forEach(p => {
+  Object.keys(byP).forEach(p=>{
     const s=seriePrecio(p);
     if (s.length>=2 && s[0].precio){
-      res.push({producto:p, ini:s[0].precio, fin:s[s.length-1].precio,
-        pct:+((s[s.length-1].precio-s[0].precio)/s[0].precio*100).toFixed(1)});
+      res.push({producto:p, ini:s[0].precio, fin:s[s.length-1].precio, pct:+((s[s.length-1].precio-s[0].precio)/s[0].precio*100).toFixed(1)});
     }
   });
   return res.sort((a,b)=>b.pct-a.pct);
 }
 
+/* ---------- gráficos globales ---------- */
 function baseOpts(unit){
   return {responsive:true,maintainAspectRatio:false,
     plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur(c.parsed.y ?? c.parsed.x)+' '+unit}}},
@@ -222,15 +285,13 @@ function dibujaMensual(gm){
   chMensual=new Chart(document.getElementById('chart-mensual'),{type:'line',
     data:{labels:gm.map(x=>etiquetaMes(x.mes)),datasets:[{data:gm.map(x=>x.gasto),
       borderColor:'#1c6b47',backgroundColor:'rgba(28,107,71,.10)',fill:true,tension:.25,
-      pointRadius:3,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€')});
+      pointRadius:2,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€')});
 }
 function dibujaTop(top){
   chTop?.destroy();
   chTop=new Chart(document.getElementById('chart-top'),{type:'bar',
-    data:{labels:top.map(x=>x.producto),datasets:[{data:top.map(x=>x.gasto),
-      backgroundColor:'#1c6b47',borderRadius:5}]},
-    options:{indexAxis:'y',...baseOpts('€'),
-      onClick:(e,els)=>{ if(els.length) abrePrecio(top[els[0].index].producto); }}});
+    data:{labels:top.map(x=>x.producto),datasets:[{data:top.map(x=>x.gasto),backgroundColor:'#1c6b47',borderRadius:5}]},
+    options:{indexAxis:'y',...baseOpts('€'),onClick:(e,els)=>{ if(els.length) abrePrecio(top[els[0].index].producto); }}});
 }
 function dibujaPrecios(rows){
   const tabla=document.getElementById('tabla-precios'), vacio=document.getElementById('precios-empty');
@@ -248,13 +309,108 @@ function dibujaPrecios(rows){
 }
 function abrePrecio(prod){
   const s=seriePrecio(prod);
-  document.getElementById('modal-title').textContent=prod;
+  document.getElementById('mp-title').textContent=prod;
   chPrecio?.destroy();
   chPrecio=new Chart(document.getElementById('chart-precio'),{type:'line',
     data:{labels:s.map(x=>x.fecha),datasets:[{data:s.map(x=>x.precio),
       borderColor:'#1c6b47',backgroundColor:'rgba(28,107,71,.10)',fill:true,tension:.2,
-      pointRadius:4,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€ /ud')});
-  document.getElementById('modal').showModal();
+      pointRadius:3,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€ /ud')});
+  document.getElementById('modal-precio').showModal();
+}
+
+/* ================= EXPLORAR POR MES ================= */
+function prepararSelectorMes(gm){
+  const sel=document.getElementById('sel-mes');
+  sel.innerHTML='';
+  gm.map(x=>x.mes).reverse().forEach(m=>{           // más reciente primero
+    const o=document.createElement('option'); o.value=m; o.textContent=etiquetaMesLargo(m); sel.appendChild(o);
+  });
+  estadoMes.mes = sel.value;
+  sel.onchange=()=>{ estadoMes.mes=sel.value; estadoMes.tienda=''; document.getElementById('buscar-tienda').value=''; renderMes(); };
+
+  const inp=document.getElementById('buscar-tienda');
+  inp.oninput=()=>{ estadoMes.tienda=inp.value.trim().toLowerCase(); renderMes(); };
+  document.getElementById('limpiar-tienda').onclick=()=>{ estadoMes.tienda=''; inp.value=''; renderMes(); };
+
+  renderMes();
+}
+
+function ticketsDelMes(){
+  let ts = TICKETS.filter(t=>t.fecha.slice(0,7)===estadoMes.mes);
+  if (estadoMes.tienda) ts = ts.filter(t=>tiendaDe(t).toLowerCase().includes(estadoMes.tienda));
+  return ts.sort((a,b)=>b.fecha.localeCompare(a.fecha));
+}
+
+function renderMes(){
+  const ts = ticketsDelMes();
+  const facturas = new Set(ts.map(t=>t.factura_id));
+  const lineasMes = LINEAS.filter(l=>facturas.has(l.factura_id));
+  document.getElementById('limpiar-tienda').hidden = !estadoMes.tienda;
+
+  // resumen
+  const total = ts.reduce((a,t)=>a+Number(t.total||0),0);
+  document.getElementById('mes-resumen').innerHTML =
+    `<div><div class="b">${eur(total)} €</div><div class="s">Gasto${estadoMes.tienda?' (filtrado)':''}</div></div>
+     <div><div class="b">${ts.length}</div><div class="s">Tickets</div></div>
+     <div><div class="b">${eur(ts.length?total/ts.length:0)} €</div><div class="s">Ticket medio</div></div>`;
+
+  // tiendas del mes (sin filtro de tienda, para poder elegir entre ellas)
+  const base = TICKETS.filter(t=>t.fecha.slice(0,7)===estadoMes.mes);
+  const porTienda={};
+  base.forEach(t=>{ const k=tiendaDe(t); (porTienda[k]=porTienda[k]||{n:0,g:0}); porTienda[k].n++; porTienda[k].g+=Number(t.total||0); });
+  const cont=document.getElementById('mes-tiendas'); cont.innerHTML='';
+  Object.entries(porTienda).sort((a,b)=>b[1].g-a[1].g).forEach(([k,v])=>{
+    const chip=document.createElement('div');
+    const activa = estadoMes.tienda && k.toLowerCase().includes(estadoMes.tienda);
+    chip.className='chip'+(activa?' activa':'');
+    chip.innerHTML=`<span>${k}</span><span class="g">${v.n} · ${eur(v.g)} €</span>`;
+    chip.onclick=()=>{
+      const inp=document.getElementById('buscar-tienda');
+      if (activa){ estadoMes.tienda=''; inp.value=''; } else { estadoMes.tienda=k.toLowerCase(); inp.value=k; }
+      renderMes();
+    };
+    cont.appendChild(chip);
+  });
+  if (!Object.keys(porTienda).length) cont.innerHTML='<span class="empty">Sin tiendas.</span>';
+
+  // lista de tickets
+  const cont2=document.getElementById('mes-tickets');
+  if (!ts.length){ cont2.innerHTML='<p class="empty">No hay compras que coincidan.</p>'; }
+  else {
+    let html='<table><thead><tr><th>Fecha</th><th>Tienda</th><th class="num">Importe</th></tr></thead><tbody>';
+    ts.forEach(t=>{
+      html+=`<tr><td><span class="tk" data-f="${t.factura_id}">${fechaCorta(t.fecha)}</span></td>
+             <td style="color:var(--gris);font-size:.82rem">${tiendaDe(t)}</td>
+             <td class="num">${eur(t.total)} €</td></tr>`;
+    });
+    html+='</tbody></table>';
+    cont2.innerHTML=html;
+    cont2.querySelectorAll('.tk').forEach(el=>el.onclick=()=>abreTicket(el.dataset.f));
+  }
+
+  // productos del mes
+  const prods=topProductos(lineasMes, 9999);
+  const cont3=document.getElementById('mes-productos');
+  if (!prods.length){ cont3.innerHTML='<p class="empty">Sin productos.</p>'; }
+  else {
+    let html='<table><thead><tr><th>Producto</th><th class="num">Uds.</th><th class="num">Gasto</th></tr></thead><tbody>';
+    prods.forEach(p=>{ html+=`<tr><td><span class="prod">${p.producto}</span></td><td class="num">${p.uds}</td><td class="num">${eur(p.gasto)} €</td></tr>`; });
+    html+='</tbody></table>';
+    cont3.innerHTML=html;
+    cont3.querySelectorAll('.prod').forEach(el=>el.onclick=()=>abrePrecio(el.textContent));
+  }
+}
+
+function abreTicket(fid){
+  const t = TICKETS.find(x=>x.factura_id===fid);
+  const ls = (LINEAS_POR_TICKET[fid]||[]);
+  document.getElementById('mt-title').textContent = `Ticket ${fechaCorta(t.fecha)} · ${eur(t.total)} €`;
+  document.getElementById('mt-meta').textContent = `${tiendaDe(t)} · nº ${fid}`;
+  let html='<table><thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Importe</th></tr></thead><tbody>';
+  ls.forEach(l=>{ html+=`<tr><td>${l.descripcion}</td><td class="num">${l.cantidad}${l.por_peso?' kg':''}</td><td class="num">${eur(l.importe)} €</td></tr>`; });
+  html+='</tbody></table>';
+  document.getElementById('mt-lineas').innerHTML=html;
+  document.getElementById('modal-ticket').showModal();
 }
 
 supabase.auth.onAuthStateChange(()=>refrescarSesion());
