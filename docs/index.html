@@ -312,7 +312,7 @@ function abrePrecio(prod){
   document.getElementById('mp-title').textContent=prod;
   chPrecio?.destroy();
   chPrecio=new Chart(document.getElementById('chart-precio'),{type:'line',
-    data:{labels:s.map(x=>x.fecha),datasets:[{data:s.map(x=>x.precio),
+    data:{labels:s.map(x=>fechaCorta(x.fecha)),datasets:[{data:s.map(x=>x.precio),
       borderColor:'#1c6b47',backgroundColor:'rgba(28,107,71,.10)',fill:true,tension:.2,
       pointRadius:3,pointBackgroundColor:'#1c6b47'}]},options:baseOpts('€ /ud')});
   document.getElementById('modal-precio').showModal();
